@@ -1,55 +1,97 @@
-from flask import Flask, redirect, request, render_template, url_for
+# Import libraries
+from flask import Flask, request, url_for, redirect, render_template
+
+from transactions import transactions
 
 # Instantiate Flask functionality
 app = Flask(__name__)
 
 # Sample data
-transactions = [
-    {'id': 1, 'date': '2023-06-01', 'amount': 100},
-    {'id': 2, 'date': '2023-06-02', 'amount': -200},
-    {'id': 3, 'date': '2023-06-03', 'amount': 300}
-]
 
-# ---- Task 1 ----#
 # Read operation
+@app.route('/')
+def get_transactions():
+    return render_template('transactions.html', transactions = transactions, total = '')
 
-
-# Create operation: Display add transaction form
-@app.route("/add", methods=["GET", "POST"])
+# Create operation
+@app.route('/add', methods = ['GET', 'POST'])
 def add_transaction():
-    if request.method == 'POST':
-        # Create a new transaction object using form field values
-        transaction = {
+    if request.method == 'GET':
+        return render_template('form.html')
+    
+    else:
+        newTransaction = {
             'id': len(transactions) + 1,
             'date': request.form['date'],
             'amount': float(request.form['amount'])
         }
-        # Append the new transaction to the list
-        transactions.append(transaction)
 
-        # Redirect to the transactions list page
-        return redirect(url_for("get_transactions"))
-    
-    # Render the form template to display the add transaction form
-    return render_template("form.html")
+        transactions.append(newTransaction)
 
+    return redirect(url_for('get_transactions'))
 
-# Delete operation: Delete a transaction
-@app.route("/delete/<int:transaction_id>")
+# Update operation
+@app.route('/edit/<int:transaction_id>', methods = ['GET', 'POST'])
+def edit_transaction(transaction_id):
+    if request.method == 'GET':
+        for transaction in transactions:
+            if transaction_id == transaction['id']:
+                return render_template('edit.html', transaction=transaction)
+    else:
+        date = request.form['date']
+        amount = float(request.form['amount'])
+
+        for transaction in transactions:
+            if transaction_id == transaction['id']:
+                transaction['date'] = date
+
+                transaction['amount'] = amount
+
+                break
+            
+    return redirect(url_for('get_transactions'))
+
+# Delete operation
+@app.route('/delete/<int:transaction_id>')
 def delete_transaction(transaction_id):
-    # Find the transaction with the matching ID and remove it from the list
     for transaction in transactions:
-        if transaction['id'] == transaction_id:
+        if transaction_id == transaction['id']:
             transactions.remove(transaction)
             break
 
-    # Redirect to the transactions list page
-    return redirect(url_for("get_transactions"))
+    return redirect(url_for('get_transactions'))
 
-# ---- Task 2 ----#
-# Update operation
+# Search Function
+@app.route('/search', methods = ['POST', 'GET'])
+def search_transactions():
+    if request.method == 'POST':
+        maximum = float(request.form['max_amount'])
+        minimum = float(request.form['min_amount'])
 
+        filtered_transactions = []
 
+        for transaction in transactions:
+            if float(transaction['amount']) >= minimum and float(transaction['amount']) <= maximum:
+
+                filtered_transactions.append(transaction)
+        
+        return render_template('transactions.html', transactions=filtered_transactions)
+    
+    return render_template('search.html')
+
+# Total Balance Function
+@app.route('/balance')
+def total_balance():
+    total = float(0)
+    for transaction in transactions:
+        total += float(transaction['amount'])
+        
+    return render_template('transactions.html', transactions = transactions, total = total)
+
+    
+        
+
+# Run the Flask app
 if __name__ == "__main__":
-    # Run the Flask app
     app.run(debug=True)
+    
