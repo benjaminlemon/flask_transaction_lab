@@ -1,10 +1,12 @@
 # Import libraries
+<<<<<<< HEAD
 from flask import Flask, request, url_for, redirect, render_template
 
 from transactions import transactions
+=======
+>>>>>>> fca1e54fc3072af195b27691a82411ca0c74576b
 
 # Instantiate Flask functionality
-app = Flask(__name__)
 
 # Sample data
 
@@ -14,6 +16,7 @@ def get_transactions():
     return render_template('transactions.html', transactions = transactions, total = '')
 
 # Create operation
+<<<<<<< HEAD
 @app.route('/add', methods = ['GET', 'POST'])
 def add_transaction():
     if request.method == 'GET':
@@ -94,4 +97,12 @@ def total_balance():
 # Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True)
+=======
+
+# Update operation
+
+# Delete operation
+
+# Run the Flask app
+>>>>>>> fca1e54fc3072af195b27691a82411ca0c74576b
     
